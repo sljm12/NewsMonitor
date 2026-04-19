@@ -9,6 +9,10 @@
 - **RSS Parsing:** `feedparser` handles external feed ingestion.
 - **Frontend:** (Planned) React 18+ with TypeScript and Vite, featuring a dark "Command Center" aesthetic.
 
+### Future Scaling (Planned)
+- **Task Queue:** Redis/Celery for distributed processing.
+- **Distributed Crawling:** Decoupled workers running Crawl4AI to handle high-volume ingestions.
+
 ## Tech Stack
 - **Languages:** Python (Backend), TypeScript (Frontend).
 - **Frameworks:** FastAPI, React.

@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## 2026-04-19
+- Finalize changelog
 - Update GEMINI.md with Crawl4AI and summarization details
 - Update changelog with recent changes
 - Update roadmap and models for Crawl4AI integration and LLM summarization

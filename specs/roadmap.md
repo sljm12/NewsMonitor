@@ -25,3 +25,10 @@
 - [ ] Integrate frontend with backend endpoints.
 - [ ] Add real-time "Refresh" capability.
 - [ ] Final UI/UX polish.
+
+## Phase 5: Scaling & Production
+- [ ] **Implement Distributed Task Queue (Redis/Celery).**
+- [ ] **Decouple RSS fetching from article crawling.**
+- [ ] **Implement Multi-Worker scaling for Crawl4AI.**
+- [ ] **Optimize browser resource management (SemaphoreDispatcher).**
+- [ ] Add crawler monitoring and auto-retry logic.
