@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.env
+.gemini/
+*.skill
+changelog-manager/
