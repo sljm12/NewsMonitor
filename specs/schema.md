@@ -1,0 +1,20 @@
+# Database Schema: Global Pulse
+
+## Table: `articles`
+Stores news items fetched from RSS feeds.
+- `id`: UUID (Primary Key, Default: uuid_generate_v4())
+- `title`: String (Title of the news item)
+- `link`: String (Unique, URL to the article)
+- `summary`: Text (Description or summary of the article)
+- `published_at`: DateTime (Article publication date)
+- `source_url`: String (RSS feed source URL)
+- `created_at`: DateTime (Date added to DB, Default: now())
+- `assessment_done`: Boolean (False until Phase 2 logic processes it)
+
+## Table: `extracted_entities`
+Stores geopolitical entities extracted from articles.
+- `id`: UUID (Primary Key)
+- `article_id`: UUID (Foreign Key -> articles.id, On Delete Cascade)
+- `entity_name`: String (e.g., "Germany", "United Nations")
+- `entity_type`: String (e.g., "Location", "Organization", "Event")
+- `confidence`: Float (Score of extraction accuracy)

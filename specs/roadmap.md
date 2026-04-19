@@ -1,0 +1,24 @@
+# Roadmap: Global Pulse Implementation
+
+## Phase 1: Foundation (Current)
+- [x] Initialize `backend` directory with FastAPI & SQLAlchemy.
+- [x] Setup PostgreSQL connection (SQLModel for ORM).
+- [x] Implement RSS service to fetch items from `links.txt`.
+- [x] Implement DB persistence (Unique link constraint for upserts).
+- [x] Basic API endpoint `/feeds` (serving from DB).
+
+## Phase 2: Intelligence Layer
+- [ ] Create location extraction logic (Countries/Cities).
+- [ ] Create event categorization (Conflict, Diplomacy, etc.).
+- [ ] Store assessments in `extracted_entities` table.
+- [ ] API endpoint `/assessment`.
+
+## Phase 3: Visual Intelligence
+- [ ] Initialize `frontend` with Vite/React/TS.
+- [ ] Design "Deep Space" global CSS theme.
+- [ ] Build `FeedList` and `AssessmentPanel` components.
+
+## Phase 4: Full Signal
+- [ ] Integrate frontend with backend endpoints.
+- [ ] Add real-time "Refresh" capability.
+- [ ] Final UI/UX polish.
