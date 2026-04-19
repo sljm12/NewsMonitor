@@ -25,7 +25,7 @@ def fetch_and_store_feeds(links_file: str = "links.txt"):
                     new_article = Article(
                         title=entry.get('title', 'No Title'),
                         link=entry.link,
-                        summary=entry.get('summary', ''),
+                        rss_summary=entry.get('summary', ''),
                         published_at=published,
                         source_url=url
                     )

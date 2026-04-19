@@ -1,13 +1,16 @@
 # Roadmap: Global Pulse Implementation
 
-## Phase 1: Foundation (Current)
+## Phase 1: Foundation & Data Acquisition
 - [x] Initialize `backend` directory with FastAPI & SQLAlchemy.
 - [x] Setup PostgreSQL connection (SQLModel for ORM).
 - [x] Implement RSS service to fetch items from `links.txt`.
 - [x] Implement DB persistence (Unique link constraint for upserts).
-- [x] Basic API endpoint `/feeds` (serving from DB).
+- [ ] **Integrate Crawl4AI for browser-based article scraping.**
+- [ ] **Store full article markdown in the database.**
+- [ ] Basic API endpoint `/feeds` (serving from DB).
 
 ## Phase 2: Intelligence Layer
+- [ ] **Implement LLM-powered summarization using full article text.**
 - [ ] Create location extraction logic (Countries/Cities).
 - [ ] Create event categorization (Conflict, Diplomacy, etc.).
 - [ ] Store assessments in `extracted_entities` table.

@@ -7,6 +7,8 @@ class Article(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     title: str
     link: str = Field(unique=True, index=True)
+    rss_summary: Optional[str] = None
+    full_text: Optional[str] = None
     summary: Optional[str] = None
     published_at: Optional[datetime] = None
     source_url: str
