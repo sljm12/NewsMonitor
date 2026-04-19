@@ -5,7 +5,7 @@ from sqlmodel import Session, select
 from backend.models import Article
 from backend.database import engine
 
-def fetch_and_store_feeds(links_file: str = "../links.txt"):
+def fetch_and_store_feeds(links_file: str = "links.txt"):
     with open(links_file, "r") as f:
         urls = [line.strip() for line in f if line.strip()]
 

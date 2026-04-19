@@ -4,6 +4,7 @@ from typing import List
 from backend.database import init_db, get_session
 from backend.models import Article
 from backend.rss_service import fetch_and_store_feeds
+from backend.extraction_service import process_unassessed_articles
 
 app = FastAPI(title="Global Pulse API")
 
@@ -29,6 +30,11 @@ def read_feeds(
 def refresh_feeds():
     fetch_and_store_feeds()
     return {"message": "Feeds refreshed successfully"}
+
+@app.post("/feeds/extract")
+def trigger_extraction():
+    process_unassessed_articles()
+    return {"message": "Entity extraction completed"}
 
 if __name__ == "__main__":
     import uvicorn

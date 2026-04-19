@@ -1,1 +1,4 @@
-https://news.google.com/rss/search?q=AI%20Agentic%20coding&hl=en-SG&gl=SG&ceid=SG%3Aen
+https://news.google.com/rss/topics/CAAqKggKIiRDQkFTRlFvSUwyMHZNRFZxYUdjU0JXVnVMVWRDR2dKVFJ5Z0FQAQ?hl=en-SG&gl=SG&ceid=SG%3Aen
+http://feeds.bbci.co.uk/news/world/rss.xml
+http://feeds.bbci.co.uk/news/uk/rss.xml
+http://feeds.bbci.co.uk/news/rss.xml
