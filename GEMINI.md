@@ -13,7 +13,7 @@
 - **Languages:** Python (Backend), TypeScript (Frontend).
 - **Frameworks:** FastAPI, React.
 - **Storage:** PostgreSQL via SQLModel.
-- **Key Libraries:** `feedparser`, `uvicorn`, `sqlmodel`, `psycopg2-binary`.
+- **Key Libraries:** `feedparser`, `crawl4ai`, `uvicorn`, `sqlmodel`, `psycopg2-binary`.
 
 ## Getting Started
 
@@ -45,8 +45,9 @@
 ### Testing
 - [TODO] Add automated test suite for RSS parsing and entity extraction.
 
-### Entity Extraction
+### Entity Extraction & Summarization
 - Uses an LLM-based approach (OpenAI, OpenRouter, or LM Studio) to identify locations, organizations, and events.
+- **Summarization:** The LLM generates a high-signal 2-3 sentence summary based on the `full_text` of the article (fetched via Crawl4AI) rather than the short RSS summary.
 - Configuration is managed via `.env` (`LLM_API_KEY`, `LLM_BASE_URL`, `LLM_MODEL`).
 - Triggered via the `/feeds/extract` API endpoint or running `backend/extraction_service.py` directly.
 - Entities are linked to `Article` records via the `ExtractedEntity` model.
