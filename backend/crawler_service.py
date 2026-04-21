@@ -11,12 +11,14 @@ from backend.database import engine
 load_dotenv()
 
 CRAWL4AI_DEBUG = os.getenv("CRAWL4AI_DEBUG", "false").lower() == "true"
+CRAWL4AI_WAIT_TIME = int(os.getenv("CRAWL4AI_WAIT_TIME", "0"))
 
 async def crawl_article(url: str) -> str:
     """Crawls a single article and returns its markdown content."""
     # headless=False shows the browser window when debug is enabled
     async with AsyncWebCrawler(headless=not CRAWL4AI_DEBUG) as crawler:
-        result = await crawler.arun(url=url)
+        # sleep_before_extract (or similar) adds a delay to allow dynamic content to load
+        result = await crawler.arun(url=url, sleep_before_extract=CRAWL4AI_WAIT_TIME)
         return result.markdown
 
 async def process_pending_crawls(article_id: Optional[UUID] = None):
