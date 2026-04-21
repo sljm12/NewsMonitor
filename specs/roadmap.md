@@ -5,9 +5,9 @@
 - [x] Setup PostgreSQL connection (SQLModel for ORM).
 - [x] Implement RSS service to fetch items from `links.txt`.
 - [x] Implement DB persistence (Unique link constraint for upserts).
-- [ ] **Integrate Crawl4AI for browser-based article scraping.**
-- [ ] **Store full article markdown in the database.**
-- [ ] Basic API endpoint `/feeds` (serving from DB).
+- [x] Integrate Crawl4AI for browser-based article scraping.
+- [x] Store full article markdown in the database.
+- [x] Basic API endpoint `/feeds` (serving from DB).
 
 ## Phase 2: Intelligence Layer
 - [ ] **Implement LLM-powered summarization using full article text.**

@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## 2026-04-19
+- docs: add multi-crawler scaling plan, update roadmap and architecture
 - Finalize changelog
 - Update GEMINI.md with Crawl4AI and summarization details
 - Update changelog with recent changes

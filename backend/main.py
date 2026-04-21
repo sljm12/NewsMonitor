@@ -5,6 +5,7 @@ from backend.database import init_db, get_session
 from backend.models import Article
 from backend.rss_service import fetch_and_store_feeds
 from backend.extraction_service import process_unassessed_articles
+from backend.crawler_service import process_pending_crawls
 
 app = FastAPI(title="Global Pulse API")
 
@@ -30,6 +31,11 @@ def read_feeds(
 def refresh_feeds():
     fetch_and_store_feeds()
     return {"message": "Feeds refreshed successfully"}
+
+@app.post("/feeds/crawl")
+async def trigger_crawl():
+    await process_pending_crawls()
+    return {"message": "Crawl processing completed"}
 
 @app.post("/feeds/extract")
 def trigger_extraction():
