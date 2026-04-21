@@ -56,7 +56,15 @@
 - Triggered via the `/feeds/extract` API endpoint or running `backend/extraction_service.py` directly.
 - Entities are linked to `Article` records via the `ExtractedEntity` model.
 
-## Key Files
+## Development Notes
+
+### Shell & CLI
+- **PowerShell Compatibility:** When chaining commands (e.g., Git operations), use `;` instead of `&&`.
+  - *Correct:* `git add .; git commit -m "message"`
+  - *Incorrect:* `git add . && git commit -m "message"`
+
+### Key Files
+
 - `backend/main.py`: Application entry point and API routes.
 - `backend/models.py`: Database schema definitions (Articles, Entities).
 - `backend/rss_service.py`: Logic for fetching and parsing RSS feeds.
