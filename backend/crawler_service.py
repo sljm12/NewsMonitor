@@ -3,7 +3,7 @@ import os
 from typing import Optional
 from uuid import UUID
 from dotenv import load_dotenv
-from crawl4ai import AsyncWebCrawler
+from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig
 from sqlmodel import Session, select
 from backend.models import Article
 from backend.database import engine
@@ -16,9 +16,12 @@ CRAWL4AI_WAIT_TIME = int(os.getenv("CRAWL4AI_WAIT_TIME", "0"))
 async def crawl_article(url: str) -> str:
     """Crawls a single article and returns its markdown content."""
     # headless=False shows the browser window when debug is enabled
-    async with AsyncWebCrawler(headless=not CRAWL4AI_DEBUG) as crawler:
+    config= BrowserConfig(headless=not CRAWL4AI_DEBUG)
+
+    async with AsyncWebCrawler(config=config) as crawler:
         # sleep_before_extract (or similar) adds a delay to allow dynamic content to load
-        result = await crawler.arun(url=url, sleep_before_extract=CRAWL4AI_WAIT_TIME)
+        crawler_config= CrawlerRunConfig(delay_before_return_html=CRAWL4AI_WAIT_TIME)
+        result = await crawler.arun(url=url, config=crawler_config)
         return result.markdown
 
 async def process_pending_crawls(article_id: Optional[UUID] = None):
