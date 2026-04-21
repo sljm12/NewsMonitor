@@ -1,14 +1,21 @@
 import asyncio
+import os
 from typing import Optional
 from uuid import UUID
+from dotenv import load_dotenv
 from crawl4ai import AsyncWebCrawler
 from sqlmodel import Session, select
 from backend.models import Article
 from backend.database import engine
 
+load_dotenv()
+
+CRAWL4AI_DEBUG = os.getenv("CRAWL4AI_DEBUG", "false").lower() == "true"
+
 async def crawl_article(url: str) -> str:
     """Crawls a single article and returns its markdown content."""
-    async with AsyncWebCrawler() as crawler:
+    # headless=False shows the browser window when debug is enabled
+    async with AsyncWebCrawler(headless=not CRAWL4AI_DEBUG) as crawler:
         result = await crawler.arun(url=url)
         return result.markdown
 
@@ -29,6 +36,11 @@ async def process_pending_crawls(article_id: Optional[UUID] = None):
             try:
                 markdown = await crawl_article(article.link)
                 article.full_text = markdown
+                
+                # Log first 100 characters
+                preview = markdown[:100].replace('\n', ' ')
+                print(f"Success! Preview: {preview}...")
+                
                 session.add(article)
                 session.commit()
             except Exception as e:

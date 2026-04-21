@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## 2026-04-21
+- docs: add PowerShell command chaining notes to GEMINI.md
+- feat: add support for targeted article crawling by UUID
 - docs: update changelog for Phase 1 completion
 - feat: implement Crawl4AI integration and complete Phase 1
 
