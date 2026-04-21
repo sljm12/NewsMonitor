@@ -1,4 +1,6 @@
 import asyncio
+from typing import Optional
+from uuid import UUID
 from crawl4ai import AsyncWebCrawler
 from sqlmodel import Session, select
 from backend.models import Article
@@ -10,10 +12,16 @@ async def crawl_article(url: str) -> str:
         result = await crawler.arun(url=url)
         return result.markdown
 
-async def process_pending_crawls():
-    """Fetches articles without full_text and crawls them."""
+async def process_pending_crawls(article_id: Optional[UUID] = None):
+    """Fetches articles without full_text and crawls them. 
+    If article_id is provided, only crawls that specific article.
+    """
     with Session(engine) as session:
-        statement = select(Article).where(Article.full_text == None)
+        if article_id:
+            statement = select(Article).where(Article.id == article_id)
+        else:
+            statement = select(Article).where(Article.full_text == None)
+            
         articles = session.exec(statement).all()
         
         for article in articles:

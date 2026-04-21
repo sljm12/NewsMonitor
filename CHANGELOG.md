@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## 2026-04-21
+- docs: update changelog for Phase 1 completion
 - feat: implement Crawl4AI integration and complete Phase 1
 
 ## 2026-04-19

@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends, Query
 from sqlmodel import Session, select
-from typing import List
+from typing import List, Optional
+from uuid import UUID
 from backend.database import init_db, get_session
 from backend.models import Article
 from backend.rss_service import fetch_and_store_feeds
@@ -33,8 +34,8 @@ def refresh_feeds():
     return {"message": "Feeds refreshed successfully"}
 
 @app.post("/feeds/crawl")
-async def trigger_crawl():
-    await process_pending_crawls()
+async def trigger_crawl(article_id: Optional[UUID] = Query(default=None)):
+    await process_pending_crawls(article_id=article_id)
     return {"message": "Crawl processing completed"}
 
 @app.post("/feeds/extract")
