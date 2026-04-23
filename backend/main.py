@@ -39,8 +39,8 @@ async def trigger_crawl(article_id: Optional[UUID] = Query(default=None)):
     return {"message": "Crawl processing completed"}
 
 @app.post("/feeds/extract")
-def trigger_extraction():
-    process_unassessed_articles()
+def trigger_extraction(article_id: Optional[UUID] = Query(default=None)):
+    process_unassessed_articles(article_id=article_id)
     return {"message": "Entity extraction completed"}
 
 if __name__ == "__main__":
