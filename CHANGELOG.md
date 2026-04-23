@@ -2,7 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2026-04-23
+- feat: implement LLM-powered summarization and targeted extraction
+- feat: add .env.sample for backend configuration
+
 ## 2026-04-21
+- refactor: use BrowserConfig and CrawlerRunConfig in crawler service
 - feat: add configurable wait time before extraction in crawler service
 - feat: add debug mode and preview logging to crawler service
 - docs: add PowerShell command chaining notes to GEMINI.md
