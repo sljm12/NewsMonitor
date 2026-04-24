@@ -1,9 +1,9 @@
-from fastapi import FastAPI, Depends, Query
-from sqlmodel import Session, select
+from fastapi import FastAPI, Depends, Query, HTTPException
+from sqlmodel import Session, select, delete
 from typing import List, Optional
 from uuid import UUID
 from backend.database import init_db, get_session
-from backend.models import Article
+from backend.models import Article, ExtractedEntity
 from backend.rss_service import fetch_and_store_feeds
 from backend.extraction_service import process_unassessed_articles
 from backend.crawler_service import process_pending_crawls
@@ -42,6 +42,31 @@ async def trigger_crawl(article_id: Optional[UUID] = Query(default=None)):
 def trigger_extraction(article_id: Optional[UUID] = Query(default=None)):
     process_unassessed_articles(article_id=article_id)
     return {"message": "Entity extraction completed"}
+
+@app.post("/articles/{article_id}/reset")
+def reset_article(
+    article_id: UUID,
+    clear_full_text: bool = Query(default=False),
+    session: Session = Depends(get_session)
+):
+    article = session.get(Article, article_id)
+    if not article:
+        raise HTTPException(status_code=404, detail="Article not found")
+
+    # Delete associated entities
+    session.exec(delete(ExtractedEntity).where(ExtractedEntity.article_id == article_id))
+
+    # Reset article fields
+    article.summary = None
+    article.assessment_done = False
+    if clear_full_text:
+        article.full_text = None
+
+    session.add(article)
+    session.commit()
+    session.refresh(article)
+
+    return {"message": f"Article {article_id} reset successfully", "article": article}
 
 if __name__ == "__main__":
     import uvicorn
