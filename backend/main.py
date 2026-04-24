@@ -34,16 +34,27 @@ def read_feeds(
 def read_articles(
     offset: int = 0,
     limit: int = Query(default=100, le=1000),
+    article_id: Optional[UUID] = Query(default=None),
     session: Session = Depends(get_session)
 ):
-    articles = session.exec(
+    statement = select(Article).options(selectinload(Article.entities)).order_by(Article.published_at.desc())
+    if article_id:
+        statement = statement.where(Article.id == article_id)
+    
+    articles = session.exec(statement.offset(offset).limit(limit)).all()
+    return articles
+
+@app.get("/articles/{article_id}", response_model=ArticleReadWithEntities)
+def read_article(article_id: UUID, session: Session = Depends(get_session)):
+    article = session.exec(
         select(Article)
         .options(selectinload(Article.entities))
-        .order_by(Article.published_at.desc())
-        .offset(offset)
-        .limit(limit)
-    ).all()
-    return articles
+        .where(Article.id == article_id)
+    ).first()
+    
+    if not article:
+        raise HTTPException(status_code=404, detail="Article not found")
+    return article
 
 @app.post("/feeds/refresh")
 def refresh_feeds():
