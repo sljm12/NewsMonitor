@@ -10,10 +10,10 @@
 - [x] Basic API endpoint `/feeds` (serving from DB).
 
 ## Phase 2: Intelligence Layer
-- [ ] **Implement LLM-powered summarization using full article text.**
+- [x] **Implement LLM-powered summarization using full article text.**
 - [ ] Create location extraction logic (Countries/Cities).
 - [ ] Create event categorization (Conflict, Diplomacy, etc.).
-- [ ] Store assessments in `extracted_entities` table.
+- [x] Store assessments in `extracted_entities` table.
 - [ ] API endpoint `/assessment`.
 
 ## Phase 3: Visual Intelligence
