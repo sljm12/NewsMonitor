@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2026-04-24
+- feat: add article reset endpoint to clear summary and entities
+- docs: update roadmap for phase 2 progress
+- docs: update CHANGELOG.md
+
 ## 2026-04-23
 - feat: implement LLM-powered summarization and targeted extraction
 - feat: add .env.sample for backend configuration
