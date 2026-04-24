@@ -1,9 +1,10 @@
 from fastapi import FastAPI, Depends, Query, HTTPException
 from sqlmodel import Session, select, delete
+from sqlalchemy.orm import selectinload
 from typing import List, Optional
 from uuid import UUID
 from backend.database import init_db, get_session
-from backend.models import Article, ExtractedEntity
+from backend.models import Article, ExtractedEntity, ArticleReadWithEntities
 from backend.rss_service import fetch_and_store_feeds
 from backend.extraction_service import process_unassessed_articles
 from backend.crawler_service import process_pending_crawls
@@ -22,10 +23,26 @@ def on_startup():
 @app.get("/feeds", response_model=List[Article])
 def read_feeds(
     offset: int = 0,
-    limit: int = Query(default=100, le=100),
+    limit: int = Query(default=100, le=1000),
     session: Session = Depends(get_session)
 ):
     articles = session.exec(select(Article).order_by(Article.published_at.desc()).offset(offset).limit(limit)).all()
+    return articles
+
+@app.get("/articles", response_model=List[ArticleReadWithEntities])
+@app.get("/assessment", response_model=List[ArticleReadWithEntities])
+def read_articles(
+    offset: int = 0,
+    limit: int = Query(default=100, le=1000),
+    session: Session = Depends(get_session)
+):
+    articles = session.exec(
+        select(Article)
+        .options(selectinload(Article.entities))
+        .order_by(Article.published_at.desc())
+        .offset(offset)
+        .limit(limit)
+    ).all()
     return articles
 
 @app.post("/feeds/refresh")

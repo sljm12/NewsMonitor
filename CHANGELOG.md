@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## 2026-04-24
+- feat: implement structured API response for articles and entities
+- feat: add /assessment endpoint alias for roadmap alignment
 - feat: add article reset endpoint to clear summary and entities
 - docs: update roadmap for phase 2 progress
 - docs: update CHANGELOG.md

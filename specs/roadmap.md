@@ -14,7 +14,8 @@
 - [ ] Create location extraction logic (Countries/Cities).
 - [ ] Create event categorization (Conflict, Diplomacy, etc.).
 - [x] Store assessments in `extracted_entities` table.
-- [ ] API endpoint `/assessment`.
+- [x] API endpoint `/assessment`.
+- [x] Implement structured API response returning articles with nested extracted entities.
 
 ## Phase 3: Visual Intelligence
 - [ ] Initialize `frontend` with Vite/React/TS.
