@@ -6,6 +6,7 @@ from openai import OpenAI
 from sqlmodel import Session, select
 from backend.models import Article, ExtractedEntity
 from backend.database import engine
+from backend.config import ARTICLE_CATEGORIES
 
 from dotenv import load_dotenv
 load_dotenv(dotenv_path="backend/.env")
@@ -15,12 +16,13 @@ API_KEY = os.getenv("LLM_API_KEY")
 BASE_URL = os.getenv("LLM_BASE_URL", "https://api.openai.com/v1")
 MODEL = os.getenv("LLM_MODEL", "gpt-4o-mini")
 
-SYSTEM_PROMPT = """
-You are a geopolitical intelligence analyst. Your task is to analyze news articles to provide a summary and extract key entities.
+SYSTEM_PROMPT = f"""
+You are a geopolitical intelligence analyst. Your task is to analyze news articles to provide a summary, classify the article, and extract key entities.
 
 Return a JSON object with:
 1. 'summary': A high-signal, 2-3 sentence summary of the article focusing on geopolitical implications.
-2. 'entities': A list of entities found. Each entity must have:
+2. 'classification': Choose EXACTLY one category from this list: {", ".join(ARTICLE_CATEGORIES)}.
+3. 'entities': A list of entities found. Each entity must have:
    - 'name': The name of the entity.
    - 'type': One of 'Location', 'Organization', or 'Event'.
    - 'confidence': A float between 0.0 and 1.0 representing your certainty.
@@ -68,6 +70,7 @@ def analyze_article_content(article: Article) -> Dict:
         result = json.loads(response.choices[0].message.content)
         return {
             "summary": result.get("summary", ""),
+            "classification": result.get("classification", "Uncategorized"),
             "entities": result.get("entities", [])
         }
     except Exception as e:
@@ -94,12 +97,15 @@ def process_unassessed_articles(article_id: Optional[UUID] = None):
             analysis_result = analyze_article_content(article)
             
             summary = analysis_result.get("summary")
+            classification = analysis_result.get("classification")
             entities = analysis_result.get("entities", [])
             print(f"Generated Summary: {summary[:100]}...")
+            print(f"Classification: {classification}")
             print(f"Extracted {len(entities)} entities.")
 
-            # Save the generated summary
+            # Save the generated results
             article.summary = summary
+            article.classification = classification
             
             # Save extracted entities
             for data in analysis_result.get("entities", []):

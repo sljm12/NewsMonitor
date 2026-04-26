@@ -10,6 +10,7 @@ class Article(SQLModel, table=True):
     rss_summary: Optional[str] = None
     full_text: Optional[str] = None
     summary: Optional[str] = None
+    classification: Optional[str] = Field(default=None, index=True)
     published_at: Optional[datetime] = None
     source_url: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
@@ -39,6 +40,7 @@ class ArticleReadWithEntities(SQLModel):
     rss_summary: Optional[str] = None
     full_text: Optional[str] = None
     summary: Optional[str] = None
+    classification: Optional[str] = None
     published_at: Optional[datetime] = None
     source_url: str
     created_at: datetime

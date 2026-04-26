@@ -12,7 +12,8 @@
 ## Phase 2: Intelligence Layer
 - [x] **Implement LLM-powered summarization using full article text.**
 - [ ] Create location extraction logic (Countries/Cities).
-- [ ] Create event categorization (Conflict, Diplomacy, etc.).
+- [/] Create event categorization (Conflict, Diplomacy, etc.) [IN PROGRESS]
+  - [x] Implement single-category classification using a predefined list.
 - [x] Store assessments in `extracted_entities` table.
 - [x] API endpoint `/assessment`.
 - [x] Implement structured API response returning articles with nested extracted entities.

@@ -87,6 +87,7 @@ def reset_article(
     # Reset article fields
     article.summary = None
     article.assessment_done = False
+    article.classification = None
     if clear_full_text:
         article.full_text = None
 
