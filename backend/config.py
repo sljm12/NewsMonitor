@@ -8,5 +8,6 @@ ARTICLE_CATEGORIES = [
     "Internal Politics",
     "Human Rights",
     "Health",
-    "Culture"
+    "Culture",
+    "Crime"
 ]
