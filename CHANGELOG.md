@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2026-04-28
+- scripts: Added scripts to invoke apis
+- feat: Added Crime as a category
+
+## 2026-04-27
+- docs: add Phase 3 for narrative synthesis and event clustering to roadmap
+
+## 2026-04-26
+- feat: implement single-category article classification; - Added backend/config.py with predefined categories; - Updated Article models with classification field; - Updated extraction_service.py to handle LLM-based classification; - Updated roadmap and changelog
+
 ## 2026-04-24
 - feat: add single article retrieval via path and query parameters
 - feat: implement structured API response for articles and entities
