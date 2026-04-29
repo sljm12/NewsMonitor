@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Depends, Query, HTTPException
-from sqlmodel import Session, select, delete
+from sqlmodel import Session, select, delete, update
 from sqlalchemy.orm import selectinload
 from typing import List, Optional
 from uuid import UUID
@@ -96,6 +96,29 @@ def reset_article(
     session.refresh(article)
 
     return {"message": f"Article {article_id} reset successfully", "article": article}
+
+@app.post("/articles/reset-all")
+def reset_all_articles(
+    clear_full_text: bool = Query(default=False),
+    session: Session = Depends(get_session)
+):
+    # Delete all associated entities
+    session.exec(delete(ExtractedEntity))
+
+    # Prepare update statement
+    statement = update(Article).values(
+        summary=None,
+        assessment_done=False,
+        classification=None
+    )
+    if clear_full_text:
+        statement = statement.values(full_text=None)
+
+    # Execute bulk update
+    session.exec(statement)
+    session.commit()
+
+    return {"message": "All articles reset successfully"}
 
 if __name__ == "__main__":
     import uvicorn
