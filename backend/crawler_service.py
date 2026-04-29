@@ -7,6 +7,8 @@ from crawl4ai import AsyncWebCrawler, BrowserConfig, CrawlerRunConfig
 from sqlmodel import Session, select
 from backend.models import Article
 from backend.database import engine
+from readability import Document
+from markdownify import markdownify as md
 
 load_dotenv()
 
@@ -21,8 +23,8 @@ async def crawl_article(url: str) -> str:
     async with AsyncWebCrawler(config=config) as crawler:
         # sleep_before_extract (or similar) adds a delay to allow dynamic content to load
         crawler_config= CrawlerRunConfig(delay_before_return_html=CRAWL4AI_WAIT_TIME)
-        result = await crawler.arun(url=url, config=crawler_config)
-        return result.markdown
+        result = await crawler.arun(url=url, config=crawler_config)        
+        return md(Document(result.html).summary())
 
 async def process_pending_crawls(article_id: Optional[UUID] = None):
     """Fetches articles without full_text and crawls them. 

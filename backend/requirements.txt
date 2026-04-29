@@ -7,3 +7,5 @@ psycopg2-binary
 requests
 openai
 crawl4ai[all]
+readability-lxml
+markdownify
