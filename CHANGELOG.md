@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2026-04-30
+- feat: add bulk article reset endpoint
+- feat: Used readbility and mardownify to clean up html to reduce token usage config: Added markdownify, readability-lxml to requirements.txt
+
+## 2026-04-29
+- feat: add article export CLI tool and fix .env loading in database service
+
 ## 2026-04-28
 - scripts: Added scripts to invoke apis
 - feat: Added Crime as a category
