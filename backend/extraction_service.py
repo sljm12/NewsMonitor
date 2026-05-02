@@ -6,7 +6,7 @@ from openai import OpenAI
 from sqlmodel import Session, select
 from backend.models import Article, ExtractedEntity
 from backend.database import engine
-from backend.config import ARTICLE_CATEGORIES
+from backend.config import ARTICLE_CATEGORIES, ENTITY_TYPES
 
 from dotenv import load_dotenv
 load_dotenv(dotenv_path="backend/.env")
@@ -22,9 +22,10 @@ You are a geopolitical intelligence analyst. Your task is to analyze news articl
 Return a JSON object with:
 1. 'summary': A high-signal, 2-3 sentence summary of the article focusing on geopolitical implications.
 2. 'classification': Choose EXACTLY one category from this list: {", ".join(ARTICLE_CATEGORIES)}.
-3. 'entities': A list of entities found. Each entity must have:
-   - 'name': The name of the entity.
-   - 'type': One of 'Location', 'Organization', or 'Event'.
+3. 'entities': A list of key entities mentioned. For locations, be as specific as possible (Country vs City).
+   Each entity must have:
+   - 'name': The normalized name of the entity (e.g., 'United States' instead of 'US', 'United Kingdom' instead of 'UK').
+   - 'type': Must be EXACTLY one from this list: {", ".join(ENTITY_TYPES)}.
    - 'confidence': A float between 0.0 and 1.0 representing your certainty.
 
 Respond ONLY with the JSON object.

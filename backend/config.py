@@ -11,3 +11,12 @@ ARTICLE_CATEGORIES = [
     "Culture",
     "Crime"
 ]
+
+ENTITY_TYPES = [
+    "Country",
+    "City",
+    "Region",
+    "Organization",
+    "Event",
+    "Person"
+]
