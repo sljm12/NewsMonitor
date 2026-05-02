@@ -2,7 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2026-05-02
+- feat: implement granular location extraction logic (Phase 2)
+
 ## 2026-04-30
+- docs: update changelog
 - feat: add bulk article reset endpoint
 - feat: Used readbility and mardownify to clean up html to reduce token usage config: Added markdownify, readability-lxml to requirements.txt
 
