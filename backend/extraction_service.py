@@ -22,7 +22,9 @@ You are a geopolitical intelligence analyst. Your task is to analyze news articl
 Return a JSON object with:
 1. 'summary': A high-signal, 2-3 sentence summary of the article focusing on geopolitical implications.
 2. 'classification': Choose EXACTLY one category from this list: {", ".join(ARTICLE_CATEGORIES)}.
-3. 'entities': A list of key entities mentioned. For locations, be as specific as possible (Country vs City).
+3. 'main_country': The primary country the article is about. Use normalized name (e.g., 'United States' instead of 'US'). If no specific country, use null.
+4. 'main_city': The primary city the article is about. Use normalized name. If no specific city, use null.
+5. 'entities': A list of key entities mentioned. For locations, be as specific as possible (Country vs City).
    Each entity must have:
    - 'name': The normalized name of the entity (e.g., 'United States' instead of 'US', 'United Kingdom' instead of 'UK').
    - 'type': Must be EXACTLY one from this list: {", ".join(ENTITY_TYPES)}.
@@ -72,6 +74,8 @@ def analyze_article_content(article: Article) -> Dict:
         return {
             "summary": result.get("summary", ""),
             "classification": result.get("classification", "Uncategorized"),
+            "main_country": result.get("main_country"),
+            "main_city": result.get("main_city"),
             "entities": result.get("entities", [])
         }
     except Exception as e:
@@ -99,14 +103,19 @@ def process_unassessed_articles(article_id: Optional[UUID] = None):
             
             summary = analysis_result.get("summary")
             classification = analysis_result.get("classification")
+            main_country = analysis_result.get("main_country")
+            main_city = analysis_result.get("main_city")
             entities = analysis_result.get("entities", [])
             print(f"Generated Summary: {summary[:100]}...")
             print(f"Classification: {classification}")
+            print(f"Main Location: {main_city}, {main_country}")
             print(f"Extracted {len(entities)} entities.")
 
             # Save the generated results
             article.summary = summary
             article.classification = classification
+            article.main_country = main_country
+            article.main_city = main_city
             
             # Save extracted entities
             for data in analysis_result.get("entities", []):

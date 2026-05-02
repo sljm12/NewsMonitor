@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## 2026-05-02
+- docs: update changelog for location extraction
 - feat: implement granular location extraction logic (Phase 2)
 
 ## 2026-04-30

@@ -11,6 +11,8 @@ class Article(SQLModel, table=True):
     full_text: Optional[str] = None
     summary: Optional[str] = None
     classification: Optional[str] = Field(default=None, index=True)
+    main_country: Optional[str] = Field(default=None, index=True)
+    main_city: Optional[str] = Field(default=None, index=True)
     published_at: Optional[datetime] = None
     source_url: str
     created_at: datetime = Field(default_factory=datetime.utcnow)
@@ -41,6 +43,8 @@ class ArticleReadWithEntities(SQLModel):
     full_text: Optional[str] = None
     summary: Optional[str] = None
     classification: Optional[str] = None
+    main_country: Optional[str] = None
+    main_city: Optional[str] = None
     published_at: Optional[datetime] = None
     source_url: str
     created_at: datetime
