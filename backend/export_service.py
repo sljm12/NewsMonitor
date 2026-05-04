@@ -2,7 +2,8 @@ import argparse
 import os
 import re
 from datetime import datetime, time
-from typing import Optional
+from typing import Optional, List
+from uuid import UUID
 from sqlmodel import Session, select, and_
 from backend.models import Article
 from backend.database import engine
@@ -15,34 +16,53 @@ def sanitize_filename(title: str) -> str:
     sanitized = sanitized.replace(" ", "_").strip("_")
     return sanitized[:100]
 
-def export_articles(export_date_str: str, output_dir: str):
-    """Exports articles published on a specific date to the output directory."""
-    try:
-        export_date = datetime.strptime(export_date_str, "%Y-%m-%d").date()
-    except ValueError:
-        print(f"Error: Invalid date format '{export_date_str}'. Use YYYY-MM-DD.")
-        return
-
-    # Define the start and end of the day
-    start_of_day = datetime.combine(export_date, time.min)
-    end_of_day = datetime.combine(export_date, time.max)
-
+def export_articles(output_dir: str, export_date_str: Optional[str] = None, article_ids: Optional[List[str]] = None):
+    """Exports articles to the output directory based on date or UUIDs."""
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
         print(f"Created directory: {output_dir}")
 
     with Session(engine) as session:
-        statement = select(Article).where(
-            and_(
-                Article.published_at >= start_of_day,
-                Article.published_at <= end_of_day,
-                Article.full_text != None
+        if export_date_str:
+            try:
+                export_date = datetime.strptime(export_date_str, "%Y-%m-%d").date()
+            except ValueError:
+                print(f"Error: Invalid date format '{export_date_str}'. Use YYYY-MM-DD.")
+                return
+
+            # Define the start and end of the day
+            start_of_day = datetime.combine(export_date, time.min)
+            end_of_day = datetime.combine(export_date, time.max)
+            
+            statement = select(Article).where(
+                and_(
+                    Article.published_at >= start_of_day,
+                    Article.published_at <= end_of_day,
+                    Article.full_text != None
+                )
             )
-        )
+        elif article_ids:
+            try:
+                uuids = [UUID(aid.strip()) for aid in article_ids]
+            except ValueError as e:
+                print(f"Error: Invalid UUID provided: {e}")
+                return
+                
+            statement = select(Article).where(
+                and_(
+                    Article.id.in_(uuids),
+                    Article.full_text != None
+                )
+            )
+        else:
+            print("Error: Either date or UUIDs must be provided.")
+            return
+
         articles = session.exec(statement).all()
 
         if not articles:
-            print(f"No articles with full text found for date: {export_date_str}")
+            filter_desc = f"date: {export_date_str}" if export_date_str else f"UUIDs: {article_ids}"
+            print(f"No articles with full text found for {filter_desc}")
             return
 
         print(f"Found {len(articles)} articles to export.")
@@ -67,8 +87,15 @@ def export_articles(export_date_str: str, output_dir: str):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Export article full text to Markdown files.")
-    parser.add_argument("--date", required=True, help="Date to export (YYYY-MM-DD)")
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument("--date", help="Date to export (YYYY-MM-DD)")
+    group.add_argument("--uuids", help="Comma-separated list of UUIDs to export")
     parser.add_argument("--output-dir", default="export", help="Directory to save exported files (default: export)")
 
     args = parser.parse_args()
-    export_articles(args.date, args.output_dir)
+    
+    uuids_list = None
+    if args.uuids:
+        uuids_list = args.uuids.split(",")
+        
+    export_articles(args.output_dir, export_date_str=args.date, article_ids=uuids_list)
