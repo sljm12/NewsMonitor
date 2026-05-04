@@ -70,5 +70,6 @@
 - `backend/rss_service.py`: Logic for fetching and parsing RSS feeds.
 - `backend/crawler_service.py`: Logic for full-text article scraping using Crawl4AI.
 - `backend/extraction_service.py`: LLM-based entity extraction logic.
+- `backend/export_service.py`: Logic for exporting article full text to Markdown files by date or UUID.
 - `specs/`: Contains mission, roadmap, and technical specifications.
 - `links.txt`: List of RSS feed URLs to monitor.

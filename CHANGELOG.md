@@ -2,7 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2026-05-05
+- feat: extend export_service with UUID-based export support
+
 ## 2026-05-02
+- feat: add main_country and main_city fields to articles and update extraction service
 - docs: update changelog for location extraction
 - feat: implement granular location extraction logic (Phase 2)
 
