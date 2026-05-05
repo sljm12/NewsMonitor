@@ -106,7 +106,10 @@ def process_unassessed_articles(article_id: Optional[UUID] = None):
             main_country = analysis_result.get("main_country")
             main_city = analysis_result.get("main_city")
             entities = analysis_result.get("entities", [])
-            print(f"Generated Summary: {summary[:100]}...")
+            
+            # Safely handle None summary for printing
+            display_summary = (summary or "")[:100]
+            print(f"Generated Summary: {display_summary}...")
             print(f"Classification: {classification}")
             print(f"Main Location: {main_city}, {main_country}")
             print(f"Extracted {len(entities)} entities.")

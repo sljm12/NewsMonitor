@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## 2026-05-05
+- fix: handle NoneType summary in extraction_service logging
+- docs: update CHANGELOG.md and GEMINI.md
 - feat: extend export_service with UUID-based export support
 
 ## 2026-05-02
