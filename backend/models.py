@@ -29,6 +29,37 @@ class ExtractedEntity(SQLModel, table=True):
 
     article: Article = Relationship(back_populates="entities")
 
+class Country(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str = Field(index=True)
+    alpha2: str = Field(unique=True, index=True)
+    alpha3: str = Field(unique=True, index=True)
+    numeric_code: Optional[int] = None
+    latitude: float
+    longitude: float
+
+class GeoName(SQLModel, table=True):
+    __tablename__ = "geonames"
+    geonameid: int = Field(primary_key=True)
+    name: Optional[str] = None
+    asciiname: Optional[str] = None
+    alternatenames: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    feature_class: Optional[str] = None
+    feature_code: Optional[str] = None
+    country_code: Optional[str] = None
+    cc2: Optional[str] = None
+    admin1_code: Optional[str] = None
+    admin2_code: Optional[str] = None
+    admin3_code: Optional[str] = None
+    admin4_code: Optional[str] = None
+    population: Optional[int] = None
+    elevation: Optional[int] = None
+    dem: Optional[int] = None
+    timezone: Optional[str] = None
+    modification_date: Optional[datetime] = None
+
 class ExtractedEntityRead(SQLModel):
     id: UUID
     entity_name: str
