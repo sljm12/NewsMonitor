@@ -2,7 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2026-05-07
+- feat: add Country and GeoName models and implement country import script
+
+## 2026-05-06
+- Merge branch 'main' of https://github.com/sljm12/NewsMonitor
+
 ## 2026-05-05
+- Remove outdated .env file
 - fix: handle NoneType summary in extraction_service logging
 - docs: update CHANGELOG.md and GEMINI.md
 - feat: extend export_service with UUID-based export support
