@@ -4,12 +4,45 @@ from sqlalchemy.orm import selectinload
 from typing import List, Optional
 from uuid import UUID
 from backend.database import init_db, get_session
-from backend.models import Article, ExtractedEntity, ArticleReadWithEntities
+from backend.models import Article, ExtractedEntity, ArticleReadWithEntities, Country, GeoName
 from backend.rss_service import fetch_and_store_feeds
 from backend.extraction_service import process_unassessed_articles
 from backend.crawler_service import process_pending_crawls
 
 app = FastAPI(title="Global Pulse API")
+
+def enrich_article_with_coords(article: Article, session: Session) -> ArticleReadWithEntities:
+    """Enriches an article with latitude and longitude based on its main location."""
+    # Use model_validate for SQLModel/Pydantic v2 compatibility
+    result = ArticleReadWithEntities.model_validate(article)
+    
+    if not article.main_country:
+        return result
+
+    # 1. Lookup Country to get alpha2 and default coords
+    country = session.exec(select(Country).where(Country.name == article.main_country)).first()
+    if not country:
+        return result
+
+    # Default to country coordinates
+    result.latitude = country.latitude
+    result.longitude = country.longitude
+
+    # 2. If city is present, try to find more granular coordinates in GeoNames
+    if article.main_city:
+        # Highest population heuristic for ambiguous city names
+        city = session.exec(
+            select(GeoName)
+            .where(GeoName.name == article.main_city)
+            .where(GeoName.country_code == country.alpha2)
+            .order_by(GeoName.population.desc())
+        ).first()
+        
+        if city:
+            result.latitude = city.latitude
+            result.longitude = city.longitude
+
+    return result
 
 @app.on_event("startup")
 def on_startup():
@@ -42,7 +75,7 @@ def read_articles(
         statement = statement.where(Article.id == article_id)
     
     articles = session.exec(statement.offset(offset).limit(limit)).all()
-    return articles
+    return [enrich_article_with_coords(article, session) for article in articles]
 
 @app.get("/articles/{article_id}", response_model=ArticleReadWithEntities)
 def read_article(article_id: UUID, session: Session = Depends(get_session)):
@@ -54,7 +87,7 @@ def read_article(article_id: UUID, session: Session = Depends(get_session)):
     
     if not article:
         raise HTTPException(status_code=404, detail="Article not found")
-    return article
+    return enrich_article_with_coords(article, session)
 
 @app.post("/feeds/refresh")
 def refresh_feeds():

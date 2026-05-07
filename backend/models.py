@@ -41,14 +41,14 @@ class Country(SQLModel, table=True):
 class GeoName(SQLModel, table=True):
     __tablename__ = "geonames"
     geonameid: int = Field(primary_key=True)
-    name: Optional[str] = None
+    name: Optional[str] = Field(default=None, index=True)
     asciiname: Optional[str] = None
     alternatenames: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     feature_class: Optional[str] = None
     feature_code: Optional[str] = None
-    country_code: Optional[str] = None
+    country_code: Optional[str] = Field(default=None, index=True)
     cc2: Optional[str] = None
     admin1_code: Optional[str] = None
     admin2_code: Optional[str] = None
@@ -80,4 +80,6 @@ class ArticleReadWithEntities(SQLModel):
     source_url: str
     created_at: datetime
     assessment_done: bool
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
     entities: List[ExtractedEntityRead] = []
