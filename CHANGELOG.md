@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## 2026-05-07
+- docs: update CHANGELOG.md
 - feat: add lat/lon coordinates to article endpoints with city-level granularity
 - docs: update CHANGELOG.md
 - feat: add Country and GeoName models and implement country import script

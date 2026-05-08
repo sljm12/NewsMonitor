@@ -132,8 +132,8 @@ def process_unassessed_articles(article_id: Optional[UUID] = None):
             
             article.assessment_done = True
             session.add(article)
-        
-        session.commit()
+            session.commit()
+            print(f"Successfully processed and committed article: {article.title}")
 
 if __name__ == "__main__":
     # Test run

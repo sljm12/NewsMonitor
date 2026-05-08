@@ -1,4 +1,7 @@
 https://news.google.com/rss/topics/CAAqKggKIiRDQkFTRlFvSUwyMHZNRFZxYUdjU0JXVnVMVWRDR2dKVFJ5Z0FQAQ?hl=en-SG&gl=SG&ceid=SG%3Aen
 http://feeds.bbci.co.uk/news/world/rss.xml
-http://feeds.bbci.co.uk/news/uk/rss.xml
-http://feeds.bbci.co.uk/news/rss.xml
+https://www.channelnewsasia.com/api/v1/rss-outbound-feed?_format=xml&category=6311
+https://rss.nytimes.com/services/xml/rss/nyt/World.xml
+https://feeds.washingtonpost.com/rss/world
+https://www.theguardian.com/world/rss
+https://news.google.com/rss/search?q=Palantir%20-stock&hl=en-SG&gl=SG&ceid=SG%3Aen
