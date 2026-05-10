@@ -63,7 +63,8 @@ def analyze_article_content(article: Article) -> Dict:
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": content}
-            ]
+            ],
+            extra_body={"reasoning": {"enabled": False}}
         )
         
         if not response or not response.choices:
@@ -89,8 +90,12 @@ def process_unassessed_articles(article_id: Optional[UUID] = None):
             statement = select(Article).where(Article.id == article_id)
             articles = session.exec(statement).all()
         else:
-            # Fetch articles where assessment_done is False
-            statement = select(Article).where(Article.assessment_done == False)
+            # Fetch articles where assessment_done is False, full_text is not null, and full_text is not empty
+            statement = select(Article).where(
+                Article.assessment_done == False,
+                Article.full_text != None,
+                Article.full_text != ""
+            )
             articles = session.exec(statement).all()
         
         if not articles:
