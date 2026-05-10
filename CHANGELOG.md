@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2026-05-10
+- feat: filter out articles with empty full_text during extraction
+
+## 2026-05-08
+- feat: commit to database after each article in extraction service
+
 ## 2026-05-07
 - docs: update CHANGELOG.md
 - feat: add lat/lon coordinates to article endpoints with city-level granularity
