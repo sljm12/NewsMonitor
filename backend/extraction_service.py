@@ -17,14 +17,18 @@ BASE_URL = os.getenv("LLM_BASE_URL", "https://api.openai.com/v1")
 MODEL = os.getenv("LLM_MODEL", "gpt-4o-mini")
 
 SYSTEM_PROMPT = f"""
-You are a geopolitical intelligence analyst. Your task is to analyze news articles to provide a summary, classify the article, and extract key entities.
+You are a geopolitical intelligence analyst. Your task is to analyze news articles to provide a summary, classify the article, identify the primary event, and extract key entities.
 
 Return a JSON object with:
 1. 'summary': A high-signal, 2-3 sentence summary of the article focusing on geopolitical implications.
 2. 'classification': Choose EXACTLY one category from this list: {", ".join(ARTICLE_CATEGORIES)}.
-3. 'main_country': The primary country the article is about. Use normalized name (e.g., 'United States' instead of 'US'). If no specific country, use null.
-4. 'main_city': The primary city the article is about. Use normalized name. If no specific city, use null.
-5. 'entities': A list of key entities mentioned. For locations, be as specific as possible (Country vs City).
+3. 'primary_event': The canonical name of the specific event this article is reporting on (e.g., '2026 G7 Summit', 'State Visit of Donald Trump to the UK'). 
+   - If it matches an existing event from the provided list, use that EXACT name. 
+   - Otherwise, propose a new, concise, and canonical name. 
+   - If no specific event, use null.
+4. 'main_country': The primary country the article is about. Use normalized name (e.g., 'United States' instead of 'US'). If no specific country, use null.
+5. 'main_city': The primary city the article is about. Use normalized name. If no specific city, use null.
+6. 'entities': A list of key entities mentioned. For locations, be as specific as possible (Country vs City).
    Each entity must have:
    - 'name': The normalized name of the entity (e.g., 'United States' instead of 'US', 'United Kingdom' instead of 'UK').
    - 'type': Must be EXACTLY one from this list: {", ".join(ENTITY_TYPES)}.
@@ -33,7 +37,7 @@ Return a JSON object with:
 Respond ONLY with the JSON object.
 """
 
-def analyze_article_content(article: Article) -> Dict:
+def analyze_article_content(article: Article, recent_events: List[str] = []) -> Dict:
     """Analyzes article content to generate a summary and extract entities."""
     # Ensure API key is available
     api_key = os.getenv("LLM_API_KEY")
@@ -55,7 +59,8 @@ def analyze_article_content(article: Article) -> Dict:
     max_chars = 12000 
     truncated_content = content_body[:max_chars]
 
-    content = f"Title: {article.title}\nContent: {truncated_content}"
+    event_context = f"\nRecent Events to reconcile against: {', '.join(recent_events)}" if recent_events else ""
+    content = f"Title: {article.title}\nContent: {truncated_content}{event_context}"
     
     try:
         response = client.chat.completions.create(
@@ -75,6 +80,7 @@ def analyze_article_content(article: Article) -> Dict:
         return {
             "summary": result.get("summary", ""),
             "classification": result.get("classification", "Uncategorized"),
+            "primary_event": result.get("primary_event"),
             "main_country": result.get("main_country"),
             "main_city": result.get("main_city"),
             "entities": result.get("entities", [])
@@ -83,8 +89,14 @@ def analyze_article_content(article: Article) -> Dict:
         print(f"Error analyzing article {article.id}: {e}")
         return {"summary": "", "entities": []}
 
+from backend.models import Article, ExtractedEntity, Event
+
 def process_unassessed_articles(article_id: Optional[UUID] = None):
     with Session(engine) as session:
+        # Fetch existing events for reconciliation
+        existing_events = session.exec(select(Event)).all()
+        recent_event_names = [e.name for e in existing_events]
+
         if article_id:
             # Fetch a specific article
             statement = select(Article).where(Article.id == article_id)
@@ -104,10 +116,11 @@ def process_unassessed_articles(article_id: Optional[UUID] = None):
 
         for article in articles:
             print(f"Analyzing article: {article.title}")
-            analysis_result = analyze_article_content(article)
+            analysis_result = analyze_article_content(article, recent_events=recent_event_names)
             
             summary = analysis_result.get("summary")
             classification = analysis_result.get("classification")
+            primary_event_name = analysis_result.get("primary_event")
             main_country = analysis_result.get("main_country")
             main_city = analysis_result.get("main_city")
             entities = analysis_result.get("entities", [])
@@ -116,8 +129,27 @@ def process_unassessed_articles(article_id: Optional[UUID] = None):
             display_summary = (summary or "")[:100]
             print(f"Generated Summary: {display_summary}...")
             print(f"Classification: {classification}")
+            print(f"Primary Event: {primary_event_name}")
             print(f"Main Location: {main_city}, {main_country}")
             print(f"Extracted {len(entities)} entities.")
+
+            # Handle Event Reconciliation/Creation
+            if primary_event_name:
+                # Case-insensitive find
+                event = session.exec(
+                    select(Event).where(Event.name.ilike(primary_event_name))
+                ).first()
+                
+                if not event:
+                    print(f"Creating new event: {primary_event_name}")
+                    event = Event(name=primary_event_name)
+                    session.add(event)
+                    session.commit()
+                    session.refresh(event)
+                    # Add to the list for the next article in this batch
+                    recent_event_names.append(event.name)
+                
+                article.event_id = event.id
 
             # Save the generated results
             article.summary = summary

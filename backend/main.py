@@ -4,7 +4,7 @@ from sqlalchemy.orm import selectinload
 from typing import List, Optional
 from uuid import UUID
 from backend.database import init_db, get_session
-from backend.models import Article, ExtractedEntity, ArticleReadWithEntities, Country, GeoName
+from backend.models import Article, ExtractedEntity, ArticleReadWithEntities, Country, GeoName, Event
 from backend.rss_service import fetch_and_store_feeds
 from backend.extraction_service import process_unassessed_articles
 from backend.crawler_service import process_pending_crawls
@@ -12,10 +12,16 @@ from backend.crawler_service import process_pending_crawls
 app = FastAPI(title="Global Pulse API")
 
 def enrich_article_with_coords(article: Article, session: Session) -> ArticleReadWithEntities:
-    """Enriches an article with latitude and longitude based on its main location."""
+    """Enriches an article with latitude and longitude based on its main location and includes event name."""
     # Use model_validate for SQLModel/Pydantic v2 compatibility
     result = ArticleReadWithEntities.model_validate(article)
     
+    # Add event name if available
+    if article.event_id:
+        event = session.get(Event, article.event_id)
+        if event:
+            result.event_name = event.name
+
     if not article.main_country:
         return result
 
@@ -88,6 +94,27 @@ def read_article(article_id: UUID, session: Session = Depends(get_session)):
     if not article:
         raise HTTPException(status_code=404, detail="Article not found")
     return enrich_article_with_coords(article, session)
+
+@app.get("/events", response_model=List[Event])
+def read_events(
+    offset: int = 0,
+    limit: int = Query(default=100, le=1000),
+    session: Session = Depends(get_session)
+):
+    events = session.exec(select(Event).order_by(Event.created_at.desc()).offset(offset).limit(limit)).all()
+    return events
+
+@app.get("/events/{event_id}", response_model=Event)
+def read_event(event_id: UUID, session: Session = Depends(get_session)):
+    event = session.exec(
+        select(Event)
+        .options(selectinload(Event.articles))
+        .where(Event.id == event_id)
+    ).first()
+    
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    return event
 
 @app.post("/feeds/refresh")
 def refresh_feeds():

@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## 2026-05-10
+- docs: update changelog for article filtering fix
 - feat: filter out articles with empty full_text during extraction
 
 ## 2026-05-08
