@@ -19,11 +19,11 @@
 - [x] Implement structured API response returning articles with nested extracted entities.
 
 ## Phase 3: Narrative Synthesis & Event Clustering
-- [ ] **Implement Automated Event Identification.**
-  - [ ] Update `extraction_service.py` to identify canonical event names (e.g., "2026 G7 Summit").
-  - [ ] Integrate vector similarity search to group similar articles semantically.
-- [ ] **Automatic Article-to-Event Tagging.**
-  - [ ] Link `Article` records to a central `Event` record upon ingestion.
+- [x] **Implement Automated Event Identification.**
+  - [x] Update `extraction_service.py` to identify canonical event names (e.g., "2026 G7 Summit").
+  - [/] Integrate vector similarity search to group similar articles semantically. [PLANNED]
+- [x] **Automatic Article-to-Event Tagging.**
+  - [x] Link `Article` records to a central `Event` record upon ingestion.
   - [ ] Enable "Event Overview" views by aggregating tagged articles.
 - [ ] **Event & Entity Wiki Pages.**
   - [ ] Generate summarized "Wiki" content for Events and key People/Organizations.
