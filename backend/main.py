@@ -4,10 +4,11 @@ from sqlalchemy.orm import selectinload
 from typing import List, Optional
 from uuid import UUID
 from backend.database import init_db, get_session
-from backend.models import Article, ExtractedEntity, ArticleReadWithEntities, Country, GeoName, Event
+from backend.models import Article, ExtractedEntity, ArticleReadWithEntities, Country, GeoName, Event, HotSpot
 from backend.rss_service import fetch_and_store_feeds
 from backend.extraction_service import process_unassessed_articles
 from backend.crawler_service import process_pending_crawls
+from backend.hotspot_service import refresh_hotspots
 
 app = FastAPI(title="Global Pulse API")
 
@@ -156,6 +157,16 @@ def reset_article(
     session.refresh(article)
 
     return {"message": f"Article {article_id} reset successfully", "article": article}
+
+@app.get("/hotspots", response_model=List[HotSpot])
+def get_hotspots(session: Session = Depends(get_session)):
+    hotspots = session.exec(select(HotSpot).where(HotSpot.is_active == True).order_by(HotSpot.severity.desc())).all()
+    return hotspots
+
+@app.post("/hotspots/refresh")
+def trigger_hotspot_refresh():
+    refresh_hotspots()
+    return {"message": "HotSpot identification completed"}
 
 @app.post("/articles/reset-all")
 def reset_all_articles(

@@ -12,7 +12,7 @@
 ## Phase 2: Intelligence Layer
 - [x] **Implement LLM-powered summarization using full article text.**
 - [x] Create location extraction logic (Countries/Cities).
-- [/] Create event categorization (Conflict, Diplomacy, etc.) [IN PROGRESS]
+- [x] Create event categorization (Conflict, Diplomacy, etc.)
   - [x] Implement single-category classification using a predefined list.
 - [x] Store assessments in `extracted_entities` table.
 - [x] API endpoint `/assessment`.
@@ -24,7 +24,11 @@
   - [/] Integrate vector similarity search to group similar articles semantically. [PLANNED]
 - [x] **Automatic Article-to-Event Tagging.**
   - [x] Link `Article` records to a central `Event` record upon ingestion.
-  - [ ] Enable "Event Overview" views by aggregating tagged articles.
+  - [x] Enable "Event Overview" views by aggregating tagged articles.
+- [x] **Hot Spot Identification.**
+  - [x] Define severity-based "Hot Spots" using LLM synthesis of high-impact categories (Conflict, Health, etc.).
+  - [x] Implement automated tracking and lifecycle management of active global hotspots.
+  - [x] API endpoint `/hotspots` for spatial dashboard ingestion.
 - [ ] **Event & Entity Wiki Pages.**
   - [ ] Generate summarized "Wiki" content for Events and key People/Organizations.
   - [ ] Implement automated **Timeline Generation** based on aggregated article dates and key developments.

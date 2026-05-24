@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import List, Optional
 from uuid import UUID, uuid4
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Field, Relationship, SQLModel, Column, Text
 
 class Event(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
@@ -10,6 +10,19 @@ class Event(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
     articles: List["Article"] = Relationship(back_populates="event")
+
+class HotSpot(SQLModel, table=True):
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    name: str = Field(index=True)
+    description: str = Field(sa_column=Column(Text))
+    category: Optional[str] = Field(default=None, index=True)
+    severity: int = Field(default=5)  # 1-10
+    location_name: str
+    latitude: float
+    longitude: float
+    is_active: bool = Field(default=True)
+    created_at: datetime = Field(default_factory=datetime.utcnow)
+    updated_at: datetime = Field(default_factory=datetime.utcnow)
 
 class Article(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)

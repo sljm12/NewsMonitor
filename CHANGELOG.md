@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2026-05-24
+- feat: implement Hot Spot identification and tracking system
+- feat: implement automated event identification and reconciliation
+- feat: add Hot Spot model and API endpoints (`/hotspots`, `/hotspots/refresh`)
+- feat: implement coordinate resolution for Hot Spots based on extracted locations
+- docs: update roadmap and changelog
+
 ## 2026-05-10
 - docs: update changelog for article filtering fix
 - feat: filter out articles with empty full_text during extraction
