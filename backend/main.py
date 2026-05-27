@@ -1,8 +1,9 @@
 from fastapi import FastAPI, Depends, Query, HTTPException
-from sqlmodel import Session, select, delete, update
+from sqlmodel import Session, select, delete, update, SQLModel
 from sqlalchemy.orm import selectinload
 from typing import List, Optional
 from uuid import UUID
+from datetime import datetime
 from backend.database import init_db, get_session
 from backend.models import Article, ExtractedEntity, ArticleReadWithEntities, Country, GeoName, Event, HotSpot
 from backend.rss_service import fetch_and_store_feeds
