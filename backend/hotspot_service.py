@@ -2,6 +2,7 @@ import os
 import json
 from datetime import datetime, timedelta
 from typing import List, Dict, Optional
+from uuid import UUID
 from openai import OpenAI
 from sqlmodel import Session, select, delete
 from backend.models import Article, HotSpot, Country, GeoName
@@ -15,6 +16,8 @@ load_dotenv(dotenv_path="backend/.env")
 API_KEY = os.getenv("LLM_API_KEY")
 BASE_URL = os.getenv("LLM_BASE_URL", "https://api.openai.com/v1")
 MODEL = os.getenv("LLM_MODEL", "gpt-4o-mini")
+
+import re
 
 HOTSPOT_SYSTEM_PROMPT = f"""
 You are a senior geopolitical risk analyst. Your task is to identify the most significant "Hot Spots" around the world based on recent news. 
@@ -30,11 +33,20 @@ For each Hot Spot, provide:
 5. 'location_name': The primary city or region and country (e.g., 'Khartoum, Sudan').
 6. 'main_country': The primary country.
 7. 'main_city': The primary city (if applicable, else null).
-8. 'source_article_ids': A list of the article UUIDs that provided the information for this Hot Spot.
+8. 'source_article_ids': A list of the EXACT article UUID strings (found in the square brackets [ ]) that provided the information for this Hot Spot.
 
 Return a JSON object with a key 'hotspots' containing the list of Hot Spot objects.
 Respond ONLY with the JSON object.
 """
+
+def clean_uuid(id_str: str) -> Optional[str]:
+    """Extracts a valid UUID string from a potentially messy LLM response."""
+    if not id_str:
+        return None
+    # Regex for a standard UUID (8-4-4-4-12 hex digits)
+    uuid_pattern = re.compile(r'[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}')
+    match = uuid_pattern.search(id_str)
+    return match.group(0) if match else None
 
 def refresh_hotspots():
     """Identifies and updates global hotspots based on recent high-impact news."""
@@ -61,17 +73,19 @@ def refresh_hotspots():
         # 2. Prepare article data for LLM
         # Grouping by location to reduce token usage and provide better context
         location_groups = {}
+        print(f"Analyzing {len(articles)} articles for hotspots...")
         for a in articles:
             loc = f"{a.main_city}, {a.main_country}" if a.main_city else a.main_country
             if loc not in location_groups:
                 location_groups[loc] = []
-            location_groups[loc].append(f"ID: {a.id} | Title: {a.title} | Summary: {a.summary}")
+            location_groups[loc].append(f"[{a.id}] {a.title} | {a.summary}")
 
         input_data = []
         for loc, summaries in location_groups.items():
             input_data.append(f"Location: {loc}\n" + "\n".join(summaries[:5])) # Limit to 5 summaries per location
 
         prompt_content = "\n\n".join(input_data)
+        # print(f"DEBUG Prompt Content:\n{prompt_content[:500]}...")
         
         try:
             response = client.chat.completions.create(
@@ -83,7 +97,8 @@ def refresh_hotspots():
                 response_format={"type": "json_object"}
             )
             
-            result = json.loads(response.choices[0].message.content)
+            raw_content = response.choices[0].message.content
+            result = json.loads(raw_content)
             hotspots_data = result.get("hotspots", [])
             
             # 3. Update Database
@@ -115,14 +130,16 @@ def refresh_hotspots():
                 source_ids = data.get("source_article_ids", [])
                 linked_articles = []
                 for s_id in source_ids:
-                    try:
-                        article_uuid = UUID(s_id)
-                        article = session.get(Article, article_uuid)
-                        if article:
-                            linked_articles.append(article)
-                    except (ValueError, TypeError):
-                        continue
-
+                    cleaned_id = clean_uuid(s_id)
+                    if cleaned_id:
+                        try:
+                            article_uuid = UUID(cleaned_id)
+                            article = session.get(Article, article_uuid)
+                            if article:
+                                linked_articles.append(article)
+                        except (ValueError, TypeError):
+                            continue
+                
                 hotspot = HotSpot(
                     name=data.get("name"),
                     description=data.get("description"),
@@ -137,7 +154,7 @@ def refresh_hotspots():
                 session.add(hotspot)
             
             session.commit()
-            print(f"Successfully updated {len(hotspots_data)} hotspots with linked articles.")
+            print(f"Successfully updated {len(hotspots_data)} hotspots.")
 
         except Exception as e:
             print(f"Error during HotSpot identification: {e}")
