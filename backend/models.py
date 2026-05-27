@@ -11,6 +11,10 @@ class Event(SQLModel, table=True):
 
     articles: List["Article"] = Relationship(back_populates="event")
 
+class ArticleHotSpotLink(SQLModel, table=True):
+    article_id: UUID = Field(foreign_key="article.id", primary_key=True)
+    hotspot_id: UUID = Field(foreign_key="hotspot.id", primary_key=True)
+
 class HotSpot(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     name: str = Field(index=True)
@@ -23,6 +27,8 @@ class HotSpot(SQLModel, table=True):
     is_active: bool = Field(default=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
+
+    articles: List["Article"] = Relationship(back_populates="hotspots", link_model=ArticleHotSpotLink)
 
 class Article(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
@@ -42,6 +48,7 @@ class Article(SQLModel, table=True):
     event_id: Optional[UUID] = Field(default=None, foreign_key="event.id")
     event: Optional[Event] = Relationship(back_populates="articles")
     entities: List["ExtractedEntity"] = Relationship(back_populates="article")
+    hotspots: List[HotSpot] = Relationship(back_populates="articles", link_model=ArticleHotSpotLink)
 
 class ExtractedEntity(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)

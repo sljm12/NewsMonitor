@@ -30,6 +30,7 @@ For each Hot Spot, provide:
 5. 'location_name': The primary city or region and country (e.g., 'Khartoum, Sudan').
 6. 'main_country': The primary country.
 7. 'main_city': The primary city (if applicable, else null).
+8. 'source_article_ids': A list of the article UUIDs that provided the information for this Hot Spot.
 
 Return a JSON object with a key 'hotspots' containing the list of Hot Spot objects.
 Respond ONLY with the JSON object.
@@ -64,7 +65,7 @@ def refresh_hotspots():
             loc = f"{a.main_city}, {a.main_country}" if a.main_city else a.main_country
             if loc not in location_groups:
                 location_groups[loc] = []
-            location_groups[loc].append(f"- {a.title}: {a.summary}")
+            location_groups[loc].append(f"ID: {a.id} | Title: {a.title} | Summary: {a.summary}")
 
         input_data = []
         for loc, summaries in location_groups.items():
@@ -96,7 +97,7 @@ def refresh_hotspots():
                 country_name = data.get("main_country")
                 city_name = data.get("main_city")
 
-                # Try to get coordinates from Country/GeoName tables (copying logic from main.py)
+                # Try to get coordinates from Country/GeoName tables
                 country = session.exec(select(Country).where(Country.name == country_name)).first()
                 if country:
                     lat, lon = country.latitude, country.longitude
@@ -110,6 +111,18 @@ def refresh_hotspots():
                         if city:
                             lat, lon = city.latitude, city.longitude
 
+                # Fetch linked articles
+                source_ids = data.get("source_article_ids", [])
+                linked_articles = []
+                for s_id in source_ids:
+                    try:
+                        article_uuid = UUID(s_id)
+                        article = session.get(Article, article_uuid)
+                        if article:
+                            linked_articles.append(article)
+                    except (ValueError, TypeError):
+                        continue
+
                 hotspot = HotSpot(
                     name=data.get("name"),
                     description=data.get("description"),
@@ -118,12 +131,13 @@ def refresh_hotspots():
                     location_name=data.get("location_name"),
                     latitude=lat,
                     longitude=lon,
-                    is_active=True
+                    is_active=True,
+                    articles=linked_articles
                 )
                 session.add(hotspot)
             
             session.commit()
-            print(f"Successfully updated {len(hotspots_data)} hotspots.")
+            print(f"Successfully updated {len(hotspots_data)} hotspots with linked articles.")
 
         except Exception as e:
             print(f"Error during HotSpot identification: {e}")

@@ -7,6 +7,8 @@ All notable changes to this project will be documented in this file.
 - feat: implement automated event identification and reconciliation
 - feat: add Hot Spot model and API endpoints (`/hotspots`, `/hotspots/refresh`)
 - feat: implement coordinate resolution for Hot Spots based on extracted locations
+- feat: link source articles to Hot Spots via many-to-many relationship
+- feat: include source articles in `/hotspots` API response
 - docs: update roadmap and changelog
 
 ## 2026-05-10

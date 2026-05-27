@@ -158,9 +158,28 @@ def reset_article(
 
     return {"message": f"Article {article_id} reset successfully", "article": article}
 
-@app.get("/hotspots", response_model=List[HotSpot])
+class HotSpotReadWithArticles(SQLModel):
+    id: UUID
+    name: str
+    description: str
+    category: Optional[str]
+    severity: int
+    location_name: str
+    latitude: float
+    longitude: float
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
+    articles: List[Article] = []
+
+@app.get("/hotspots", response_model=List[HotSpotReadWithArticles])
 def get_hotspots(session: Session = Depends(get_session)):
-    hotspots = session.exec(select(HotSpot).where(HotSpot.is_active == True).order_by(HotSpot.severity.desc())).all()
+    hotspots = session.exec(
+        select(HotSpot)
+        .options(selectinload(HotSpot.articles))
+        .where(HotSpot.is_active == True)
+        .order_by(HotSpot.severity.desc())
+    ).all()
     return hotspots
 
 @app.post("/hotspots/refresh")
