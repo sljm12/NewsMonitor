@@ -96,7 +96,7 @@ class ExtractedEntityRead(SQLModel):
     entity_type: str
     confidence: float
 
-class ArticleReadWithEntities(SQLModel):
+class ArticleRead(SQLModel):
     id: UUID
     title: str
     link: str
@@ -111,7 +111,18 @@ class ArticleReadWithEntities(SQLModel):
     created_at: datetime
     assessment_done: bool
     event_id: Optional[UUID] = None
+
+class ArticleReadWithEntities(ArticleRead):
     event_name: Optional[str] = None
     latitude: Optional[float] = None
     longitude: Optional[float] = None
     entities: List[ExtractedEntityRead] = []
+
+class EventRead(SQLModel):
+    id: UUID
+    name: str
+    description: Optional[str] = None
+    created_at: datetime
+
+class EventReadWithArticles(EventRead):
+    articles: List[ArticleRead] = []

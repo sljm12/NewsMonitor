@@ -5,7 +5,7 @@ from typing import List, Optional
 from uuid import UUID
 from datetime import datetime
 from backend.database import init_db, get_session
-from backend.models import Article, ExtractedEntity, ArticleReadWithEntities, Country, GeoName, Event, HotSpot
+from backend.models import Article, ExtractedEntity, ArticleRead, ArticleReadWithEntities, Country, GeoName, Event, HotSpot, EventReadWithArticles
 from backend.rss_service import fetch_and_store_feeds
 from backend.extraction_service import process_unassessed_articles
 from backend.crawler_service import process_pending_crawls
@@ -97,16 +97,22 @@ def read_article(article_id: UUID, session: Session = Depends(get_session)):
         raise HTTPException(status_code=404, detail="Article not found")
     return enrich_article_with_coords(article, session)
 
-@app.get("/events", response_model=List[Event])
+@app.get("/events", response_model=List[EventReadWithArticles])
 def read_events(
     offset: int = 0,
     limit: int = Query(default=100, le=1000),
     session: Session = Depends(get_session)
 ):
-    events = session.exec(select(Event).order_by(Event.created_at.desc()).offset(offset).limit(limit)).all()
+    events = session.exec(
+        select(Event)
+        .options(selectinload(Event.articles))
+        .order_by(Event.created_at.desc())
+        .offset(offset)
+        .limit(limit)
+    ).all()
     return events
 
-@app.get("/events/{event_id}", response_model=Event)
+@app.get("/events/{event_id}", response_model=EventReadWithArticles)
 def read_event(event_id: UUID, session: Session = Depends(get_session)):
     event = session.exec(
         select(Event)
