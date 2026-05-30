@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## 2026-05-30
+- feat: add start_date and end_date filters to /articles endpoint
+- docs: update CHANGELOG.md
 - feat: include associated articles in /events endpoints
 
 ## 2026-05-27
