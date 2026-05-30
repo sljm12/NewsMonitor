@@ -26,9 +26,13 @@ Return a JSON object with:
    - If it matches an existing event from the provided list, use that EXACT name. 
    - Otherwise, propose a new, concise, and canonical name. 
    - If no specific event, use null.
-4. 'main_country': The primary country the article is about. Use normalized name (e.g., 'United States' instead of 'US'). If no specific country, use null.
-5. 'main_city': The primary city the article is about. Use normalized name. If no specific city, use null.
-6. 'entities': A list of key entities mentioned. For locations, be as specific as possible (Country vs City).
+4. 'primary_event_description': A brief, 1-2 sentence description of the 'primary_event'. 
+   - If the event is new, provide a clear summary of what it is.
+   - If the event exists in the provided list, REFINE the existing description to include any new significant details or context from this article, keeping it concise (max 3 sentences).
+   - If 'primary_event' is null, this should also be null.
+5. 'main_country': The primary country the article is about. Use normalized name (e.g., 'United States' instead of 'US'). If no specific country, use null.
+6. 'main_city': The primary city the article is about. Use normalized name. If no specific city, use null.
+7. 'entities': A list of key entities mentioned. For locations, be as specific as possible (Country vs City).
    Each entity must have:
    - 'name': The normalized name of the entity (e.g., 'United States' instead of 'US', 'United Kingdom' instead of 'UK').
    - 'type': Must be EXACTLY one from this list: {", ".join(ENTITY_TYPES)}.
@@ -37,7 +41,7 @@ Return a JSON object with:
 Respond ONLY with the JSON object.
 """
 
-def analyze_article_content(article: Article, recent_events: List[str] = []) -> Dict:
+def analyze_article_content(article: Article, recent_events: Dict[str, str] = {}) -> Dict:
     """Analyzes article content to generate a summary and extract entities."""
     # Ensure API key is available
     api_key = os.getenv("LLM_API_KEY")
@@ -59,7 +63,12 @@ def analyze_article_content(article: Article, recent_events: List[str] = []) -> 
     max_chars = 12000 
     truncated_content = content_body[:max_chars]
 
-    event_context = f"\nRecent Events to reconcile against: {', '.join(recent_events)}" if recent_events else ""
+    event_context = ""
+    if recent_events:
+        event_context = "\nRecent Events to reconcile against:\n"
+        for name, desc in recent_events.items():
+            event_context += f"- {name}: {desc or 'No description'}\n"
+
     content = f"Title: {article.title}\nContent: {truncated_content}{event_context}"
     
     try:
@@ -81,6 +90,7 @@ def analyze_article_content(article: Article, recent_events: List[str] = []) -> 
             "summary": result.get("summary", ""),
             "classification": result.get("classification", "Uncategorized"),
             "primary_event": result.get("primary_event"),
+            "primary_event_description": result.get("primary_event_description"),
             "main_country": result.get("main_country"),
             "main_city": result.get("main_city"),
             "entities": result.get("entities", [])
@@ -93,9 +103,9 @@ from backend.models import Article, ExtractedEntity, Event
 
 def process_unassessed_articles(article_id: Optional[UUID] = None):
     with Session(engine) as session:
-        # Fetch existing events for reconciliation
+        # Fetch existing events for reconciliation (name and description)
         existing_events = session.exec(select(Event)).all()
-        recent_event_names = [e.name for e in existing_events]
+        recent_events_map = {e.name: e.description for e in existing_events}
 
         if article_id:
             # Fetch a specific article
@@ -116,11 +126,12 @@ def process_unassessed_articles(article_id: Optional[UUID] = None):
 
         for article in articles:
             print(f"Analyzing article: {article.title}")
-            analysis_result = analyze_article_content(article, recent_events=recent_event_names)
+            analysis_result = analyze_article_content(article, recent_events=recent_events_map)
             
             summary = analysis_result.get("summary")
             classification = analysis_result.get("classification")
             primary_event_name = analysis_result.get("primary_event")
+            primary_event_description = analysis_result.get("primary_event_description")
             main_country = analysis_result.get("main_country")
             main_city = analysis_result.get("main_city")
             entities = analysis_result.get("entities", [])
@@ -130,10 +141,12 @@ def process_unassessed_articles(article_id: Optional[UUID] = None):
             print(f"Generated Summary: {display_summary}...")
             print(f"Classification: {classification}")
             print(f"Primary Event: {primary_event_name}")
+            if primary_event_description:
+                print(f"Event Description: {primary_event_description[:100]}...")
             print(f"Main Location: {main_city}, {main_country}")
             print(f"Extracted {len(entities)} entities.")
 
-            # Handle Event Reconciliation/Creation
+            # Handle Event Reconciliation/Creation/Update
             if primary_event_name:
                 # Case-insensitive find
                 event = session.exec(
@@ -142,12 +155,22 @@ def process_unassessed_articles(article_id: Optional[UUID] = None):
                 
                 if not event:
                     print(f"Creating new event: {primary_event_name}")
-                    event = Event(name=primary_event_name)
+                    event = Event(name=primary_event_name, description=primary_event_description)
                     session.add(event)
                     session.commit()
                     session.refresh(event)
-                    # Add to the list for the next article in this batch
-                    recent_event_names.append(event.name)
+                    # Add to the map for the next article in this batch
+                    recent_events_map[event.name] = event.description
+                else:
+                    # Update description if a refined one is provided
+                    if primary_event_description and primary_event_description != event.description:
+                        print(f"Refining description for event: {event.name}")
+                        event.description = primary_event_description
+                        session.add(event)
+                        session.commit()
+                        session.refresh(event)
+                        # Update the map
+                        recent_events_map[event.name] = event.description
                 
                 article.event_id = event.id
 
