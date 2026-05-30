@@ -76,12 +76,18 @@ def read_articles(
     offset: int = 0,
     limit: int = Query(default=100, le=1000),
     article_id: Optional[UUID] = Query(default=None),
+    start_date: Optional[datetime] = Query(default=None),
+    end_date: Optional[datetime] = Query(default=None),
     session: Session = Depends(get_session)
 ):
     statement = select(Article).options(selectinload(Article.entities)).order_by(Article.published_at.desc())
     if article_id:
         statement = statement.where(Article.id == article_id)
-    
+    if start_date:
+        statement = statement.where(Article.published_at >= start_date)
+    if end_date:
+        statement = statement.where(Article.published_at <= end_date)
+
     articles = session.exec(statement.offset(offset).limit(limit)).all()
     return [enrich_article_with_coords(article, session) for article in articles]
 
