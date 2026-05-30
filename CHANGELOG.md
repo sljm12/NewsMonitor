@@ -2,14 +2,22 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2026-05-30
+- feat: include associated articles in /events endpoints
+
+## 2026-05-27
+- fix: ensure robust UUID parsing and linking in HotSpot identification
+- fix: add missing imports in main.py for HotSpotReadWithArticles
+- feat: link source articles to Hot Spots and include in API
+
 ## 2026-05-24
 - feat: implement Hot Spot identification and tracking system
+
+## 2026-05-21
+- docs: update roadmap for automated event identification
+
+## 2026-05-16
 - feat: implement automated event identification and reconciliation
-- feat: add Hot Spot model and API endpoints (`/hotspots`, `/hotspots/refresh`)
-- feat: implement coordinate resolution for Hot Spots based on extracted locations
-- feat: link source articles to Hot Spots via many-to-many relationship
-- feat: include source articles in `/hotspots` API response
-- docs: update roadmap and changelog
 
 ## 2026-05-10
 - docs: update changelog for article filtering fix
