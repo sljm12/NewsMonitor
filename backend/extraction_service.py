@@ -30,9 +30,10 @@ Return a JSON object with:
    - If the event is new, provide a clear summary of what it is.
    - If the event exists in the provided list, REFINE the existing description to include any new significant details or context from this article, keeping it concise (max 3 sentences).
    - If 'primary_event' is null, this should also be null.
-5. 'main_country': The primary country the article is about. Use normalized name (e.g., 'United States' instead of 'US'). If no specific country, use null.
-6. 'main_city': The primary city the article is about. Use normalized name. If no specific city, use null.
-7. 'entities': A list of key entities mentioned. For locations, be as specific as possible (Country vs City).
+5. 'primary_event_classification': Choose EXACTLY one category from this list: {", ".join(ARTICLE_CATEGORIES)} for the primary event. If 'primary_event' is null, this should also be null.
+6. 'main_country': The primary country the article is about. Use normalized name (e.g., 'United States' instead of 'US'). If no specific country, use null.
+7. 'main_city': The primary city the article is about. Use normalized name. If no specific city, use null.
+8. 'entities': A list of key entities mentioned. For locations, be as specific as possible (Country vs City).
    Each entity must have:
    - 'name': The normalized name of the entity (e.g., 'United States' instead of 'US', 'United Kingdom' instead of 'UK').
    - 'type': Must be EXACTLY one from this list: {", ".join(ENTITY_TYPES)}.
@@ -91,6 +92,7 @@ def analyze_article_content(article: Article, recent_events: Dict[str, str] = {}
             "classification": result.get("classification", "Uncategorized"),
             "primary_event": result.get("primary_event"),
             "primary_event_description": result.get("primary_event_description"),
+            "primary_event_classification": result.get("primary_event_classification"),
             "main_country": result.get("main_country"),
             "main_city": result.get("main_city"),
             "entities": result.get("entities", [])
@@ -132,6 +134,7 @@ def process_unassessed_articles(article_id: Optional[UUID] = None):
             classification = analysis_result.get("classification")
             primary_event_name = analysis_result.get("primary_event")
             primary_event_description = analysis_result.get("primary_event_description")
+            primary_event_classification = analysis_result.get("primary_event_classification")
             main_country = analysis_result.get("main_country")
             main_city = analysis_result.get("main_city")
             entities = analysis_result.get("entities", [])
@@ -140,7 +143,7 @@ def process_unassessed_articles(article_id: Optional[UUID] = None):
             display_summary = (summary or "")[:100]
             print(f"Generated Summary: {display_summary}...")
             print(f"Classification: {classification}")
-            print(f"Primary Event: {primary_event_name}")
+            print(f"Primary Event: {primary_event_name} ({primary_event_classification})")
             if primary_event_description:
                 print(f"Event Description: {primary_event_description[:100]}...")
             print(f"Main Location: {main_city}, {main_country}")
@@ -155,7 +158,11 @@ def process_unassessed_articles(article_id: Optional[UUID] = None):
                 
                 if not event:
                     print(f"Creating new event: {primary_event_name}")
-                    event = Event(name=primary_event_name, description=primary_event_description)
+                    event = Event(
+                        name=primary_event_name, 
+                        description=primary_event_description,
+                        classification=primary_event_classification
+                    )
                     session.add(event)
                     session.commit()
                     session.refresh(event)
@@ -163,9 +170,18 @@ def process_unassessed_articles(article_id: Optional[UUID] = None):
                     recent_events_map[event.name] = event.description
                 else:
                     # Update description if a refined one is provided
+                    update_needed = False
                     if primary_event_description and primary_event_description != event.description:
                         print(f"Refining description for event: {event.name}")
                         event.description = primary_event_description
+                        update_needed = True
+                    
+                    if primary_event_classification and primary_event_classification != event.classification:
+                        print(f"Updating classification for event: {event.name}")
+                        event.classification = primary_event_classification
+                        update_needed = True
+
+                    if update_needed:
                         session.add(event)
                         session.commit()
                         session.refresh(event)

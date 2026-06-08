@@ -2,7 +2,16 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2026-06-08
+- feat(event): add classification field to Event model and extraction service
+- feat(hotspot): remove hardcoded limit on hotspot identification
+
+## 2026-05-31
+- fix(hotspot): implement intelligent upsert to resolve ForeignKeyViolation
+- feat(extraction): add and refine primary event descriptions during article analysis
+
 ## 2026-05-30
+- docs: update CHANGELOG.md
 - feat: add start_date and end_date filters to /articles endpoint
 - docs: update CHANGELOG.md
 - feat: include associated articles in /events endpoints

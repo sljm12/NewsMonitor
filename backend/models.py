@@ -7,6 +7,7 @@ class Event(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     name: str = Field(index=True, unique=True)
     description: Optional[str] = None
+    classification: Optional[str] = Field(default=None, index=True)
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
     articles: List["Article"] = Relationship(back_populates="event")
@@ -122,6 +123,7 @@ class EventRead(SQLModel):
     id: UUID
     name: str
     description: Optional[str] = None
+    classification: Optional[str] = None
     created_at: datetime
 
 class EventReadWithArticles(EventRead):
