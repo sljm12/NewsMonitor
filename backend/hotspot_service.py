@@ -30,7 +30,7 @@ If an incident is already being tracked, please reuse the exact 'name' from the 
 Existing names: {existing_names}
 
 ### Task
-Based on the provided article summaries, identify the top 5-10 active Hot Spots.
+Based on the provided article summaries, identify all significant active Hot Spots.
 For each Hot Spot, provide:
 1. 'name': A concise, canonical name for the situation. REUSE an existing name if the incident is the same.
 2. 'description': A high-signal situation report (3-4 sentences) explaining the current status and implications.
