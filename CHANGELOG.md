@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## 2026-06-10
+- feat: unify HotSpots and Events into a many-to-many Event model
+
 ## 2026-06-08
 - feat(event): add classification field to Event model and extraction service
 - feat(hotspot): remove hardcoded limit on hotspot identification
