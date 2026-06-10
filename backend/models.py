@@ -3,33 +3,26 @@ from typing import List, Optional
 from uuid import UUID, uuid4
 from sqlmodel import Field, Relationship, SQLModel, Column, Text
 
+class ArticleEventLink(SQLModel, table=True):
+    article_id: UUID = Field(foreign_key="article.id", primary_key=True)
+    event_id: UUID = Field(foreign_key="event.id", primary_key=True)
+
 class Event(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     name: str = Field(index=True, unique=True)
     description: Optional[str] = None
     classification: Optional[str] = Field(default=None, index=True)
-    created_at: datetime = Field(default_factory=datetime.utcnow)
-
-    articles: List["Article"] = Relationship(back_populates="event")
-
-class ArticleHotSpotLink(SQLModel, table=True):
-    article_id: UUID = Field(foreign_key="article.id", primary_key=True)
-    hotspot_id: UUID = Field(foreign_key="hotspot.id", primary_key=True)
-
-class HotSpot(SQLModel, table=True):
-    id: UUID = Field(default_factory=uuid4, primary_key=True)
-    name: str = Field(index=True)
-    description: str = Field(sa_column=Column(Text))
     category: Optional[str] = Field(default=None, index=True)
     severity: int = Field(default=5)  # 1-10
-    location_name: str
-    latitude: float
-    longitude: float
+    location_name: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
     is_active: bool = Field(default=True)
+    is_hotspot: bool = Field(default=False)
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
-    articles: List["Article"] = Relationship(back_populates="hotspots", link_model=ArticleHotSpotLink)
+    articles: List["Article"] = Relationship(back_populates="events", link_model=ArticleEventLink)
 
 class Article(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
@@ -46,10 +39,8 @@ class Article(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     assessment_done: bool = Field(default=False)
 
-    event_id: Optional[UUID] = Field(default=None, foreign_key="event.id")
-    event: Optional[Event] = Relationship(back_populates="articles")
+    events: List[Event] = Relationship(back_populates="articles", link_model=ArticleEventLink)
     entities: List["ExtractedEntity"] = Relationship(back_populates="article")
-    hotspots: List[HotSpot] = Relationship(back_populates="articles", link_model=ArticleHotSpotLink)
 
 class ExtractedEntity(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
@@ -111,7 +102,6 @@ class ArticleRead(SQLModel):
     source_url: str
     created_at: datetime
     assessment_done: bool
-    event_id: Optional[UUID] = None
 
 class ArticleReadWithEntities(ArticleRead):
     event_name: Optional[str] = None
@@ -124,7 +114,15 @@ class EventRead(SQLModel):
     name: str
     description: Optional[str] = None
     classification: Optional[str] = None
+    category: Optional[str] = None
+    severity: int
+    location_name: Optional[str] = None
+    latitude: Optional[float] = None
+    longitude: Optional[float] = None
+    is_active: bool
+    is_hotspot: bool
     created_at: datetime
+    updated_at: datetime
 
 class EventReadWithArticles(EventRead):
     articles: List[ArticleRead] = []

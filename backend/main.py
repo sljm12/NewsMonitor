@@ -5,7 +5,7 @@ from typing import List, Optional
 from uuid import UUID
 from datetime import datetime
 from backend.database import init_db, get_session
-from backend.models import Article, ExtractedEntity, ArticleRead, ArticleReadWithEntities, Country, GeoName, Event, HotSpot, EventReadWithArticles
+from backend.models import Article, ExtractedEntity, ArticleRead, ArticleReadWithEntities, Country, GeoName, Event, EventReadWithArticles
 from backend.rss_service import fetch_and_store_feeds
 from backend.extraction_service import process_unassessed_articles
 from backend.crawler_service import process_pending_crawls
@@ -18,11 +18,9 @@ def enrich_article_with_coords(article: Article, session: Session) -> ArticleRea
     # Use model_validate for SQLModel/Pydantic v2 compatibility
     result = ArticleReadWithEntities.model_validate(article)
     
-    # Add event name if available
-    if article.event_id:
-        event = session.get(Event, article.event_id)
-        if event:
-            result.event_name = event.name
+    # Add primary event name if available (pick the first one for now)
+    if article.events:
+        result.event_name = article.events[0].name
 
     if not article.main_country:
         return result
@@ -80,7 +78,11 @@ def read_articles(
     end_date: Optional[datetime] = Query(default=None),
     session: Session = Depends(get_session)
 ):
-    statement = select(Article).options(selectinload(Article.entities)).order_by(Article.published_at.desc())
+    statement = select(Article).options(
+        selectinload(Article.entities),
+        selectinload(Article.events)
+    ).order_by(Article.published_at.desc())
+    
     if article_id:
         statement = statement.where(Article.id == article_id)
     if start_date:
@@ -95,7 +97,10 @@ def read_articles(
 def read_article(article_id: UUID, session: Session = Depends(get_session)):
     article = session.exec(
         select(Article)
-        .options(selectinload(Article.entities))
+        .options(
+            selectinload(Article.entities),
+            selectinload(Article.events)
+        )
         .where(Article.id == article_id)
     ).first()
     
@@ -171,27 +176,14 @@ def reset_article(
 
     return {"message": f"Article {article_id} reset successfully", "article": article}
 
-class HotSpotReadWithArticles(SQLModel):
-    id: UUID
-    name: str
-    description: str
-    category: Optional[str]
-    severity: int
-    location_name: str
-    latitude: float
-    longitude: float
-    is_active: bool
-    created_at: datetime
-    updated_at: datetime
-    articles: List[Article] = []
-
-@app.get("/hotspots", response_model=List[HotSpotReadWithArticles])
+@app.get("/hotspots", response_model=List[EventReadWithArticles])
 def get_hotspots(session: Session = Depends(get_session)):
     hotspots = session.exec(
-        select(HotSpot)
-        .options(selectinload(HotSpot.articles))
-        .where(HotSpot.is_active == True)
-        .order_by(HotSpot.severity.desc())
+        select(Event)
+        .options(selectinload(Event.articles))
+        .where(Event.is_hotspot == True)
+        .where(Event.is_active == True)
+        .order_by(Event.severity.desc())
     ).all()
     return hotspots
 

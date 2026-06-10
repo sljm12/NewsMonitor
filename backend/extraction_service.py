@@ -188,7 +188,8 @@ def process_unassessed_articles(article_id: Optional[UUID] = None):
                         # Update the map
                         recent_events_map[event.name] = event.description
                 
-                article.event_id = event.id
+                if event not in article.events:
+                    article.events.append(event)
 
             # Save the generated results
             article.summary = summary

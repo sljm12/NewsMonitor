@@ -5,7 +5,7 @@ from typing import List, Dict, Optional
 from uuid import UUID
 from openai import OpenAI
 from sqlmodel import Session, select, delete
-from backend.models import Article, HotSpot, Country, GeoName
+from backend.models import Article, Event, Country, GeoName
 from backend.database import engine
 from backend.config import ARTICLE_CATEGORIES
 
@@ -64,7 +64,7 @@ def refresh_hotspots():
     
     with Session(engine) as session:
         # 0. Fetch existing hotspots for context
-        existing_hotspots = session.exec(select(HotSpot)).all()
+        existing_hotspots = session.exec(select(Event).where(Event.is_hotspot == True)).all()
         existing_names = ", ".join([h.name for h in existing_hotspots if h.is_active]) or "None"
         
         # 1. Fetch high-impact articles from the last 72 hours
@@ -117,9 +117,9 @@ def refresh_hotspots():
             
             for data in hotspots_data:
                 name = data.get("name")
-                # Try to find existing hotspot by name (case-insensitive)
+                # Try to find existing event by name (case-insensitive)
                 existing = session.exec(
-                    select(HotSpot).where(HotSpot.name == name)
+                    select(Event).where(Event.name == name)
                 ).first()
 
                 # Resolve coordinates
@@ -163,6 +163,7 @@ def refresh_hotspots():
                     existing.latitude = lat
                     existing.longitude = lon
                     existing.is_active = True
+                    existing.is_hotspot = True
                     existing.updated_at = datetime.utcnow()
                     
                     # Append new articles (avoiding duplicates)
@@ -174,7 +175,7 @@ def refresh_hotspots():
                     processed_ids.append(existing.id)
                 else:
                     # Create new record
-                    new_hotspot = HotSpot(
+                    new_event = Event(
                         name=name,
                         description=data.get("description"),
                         category=data.get("category"),
@@ -183,16 +184,18 @@ def refresh_hotspots():
                         latitude=lat,
                         longitude=lon,
                         is_active=True,
+                        is_hotspot=True,
                         articles=linked_articles
                     )
-                    session.add(new_hotspot)
+                    session.add(new_event)
                     session.flush() # Populate ID
-                    processed_ids.append(new_hotspot.id)
+                    processed_ids.append(new_event.id)
 
             # 4. Deactivate hotspots not in the latest run
-            deactivate_statement = select(HotSpot).where(
-                HotSpot.is_active == True,
-                HotSpot.id.not_in(processed_ids)
+            deactivate_statement = select(Event).where(
+                Event.is_hotspot == True,
+                Event.is_active == True,
+                Event.id.not_in(processed_ids)
             )
             to_deactivate = session.exec(deactivate_statement).all()
             for h in to_deactivate:
