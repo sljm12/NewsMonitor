@@ -59,6 +59,7 @@ class Country(SQLModel, table=True):
     numeric_code: Optional[int] = None
     latitude: float
     longitude: float
+    area: Optional[str] = Field(default=None, index=True)
 
 class GeoName(SQLModel, table=True):
     __tablename__ = "geonames"

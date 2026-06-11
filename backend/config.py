@@ -9,7 +9,9 @@ ARTICLE_CATEGORIES = [
     "Human Rights",
     "Health",
     "Culture",
-    "Crime"
+    "Crime",
+    "Sports",
+    "Entertainment"
 ]
 
 ENTITY_TYPES = [

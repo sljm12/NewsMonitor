@@ -1,6 +1,6 @@
 
 from uuid import uuid4
-from sqlmodel import Session, create_engine, SQLModel
+from sqlmodel import Session, create_engine, SQLModel, select
 from backend.models import Article, Country, GeoName, ArticleReadWithEntities
 from backend.main import enrich_article_with_coords
 
@@ -48,6 +48,15 @@ def test_enrichment():
         print(f"Test 4 (City not found): lat={enriched4.latitude}, lon={enriched4.longitude}")
         assert enriched4.latitude == 54.0
         assert enriched4.longitude == -2.0
+
+        # Test 5: Verify Country area field works
+        from backend.migrate_country_areas import MAPPING
+        uk.area = MAPPING.get(uk.alpha2)
+        session.add(uk)
+        session.commit()
+        refreshed_uk = session.exec(select(Country).where(Country.alpha2 == "GB")).first()
+        print(f"Test 5 (UK Area): area={refreshed_uk.area}")
+        assert refreshed_uk.area == "Europe"
 
         print("All tests passed!")
 
