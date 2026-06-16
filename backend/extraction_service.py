@@ -2,6 +2,7 @@ import os
 import json
 from typing import List, Dict, Optional
 from uuid import UUID
+from datetime import datetime, timedelta
 from openai import OpenAI
 from sqlmodel import Session, select
 from backend.models import Article, ExtractedEntity
@@ -15,6 +16,13 @@ load_dotenv(dotenv_path="backend/.env")
 API_KEY = os.getenv("LLM_API_KEY")
 BASE_URL = os.getenv("LLM_BASE_URL", "https://api.openai.com/v1")
 MODEL = os.getenv("LLM_MODEL", "gpt-4o-mini")
+
+# Load RECENT_EVENTS_DAYS
+_days = os.getenv("RECENT_EVENTS_DAYS")
+try:
+    RECENT_EVENTS_DAYS = int(_days) if _days is not None else None
+except ValueError:
+    RECENT_EVENTS_DAYS = None
 
 SYSTEM_PROMPT = f"""
 You are a geopolitical intelligence analyst. Your task is to analyze news articles to provide a summary, classify the article, identify the primary event, and extract key entities.
@@ -106,7 +114,11 @@ from backend.models import Article, ExtractedEntity, Event
 def process_unassessed_articles(article_id: Optional[UUID] = None):
     with Session(engine) as session:
         # Fetch existing events for reconciliation (name and description)
-        existing_events = session.exec(select(Event)).all()
+        if RECENT_EVENTS_DAYS is not None and RECENT_EVENTS_DAYS > 0:
+            cutoff_date = datetime.utcnow() - timedelta(days=RECENT_EVENTS_DAYS)
+            existing_events = session.exec(select(Event).where(Event.created_at >= cutoff_date)).all()
+        else:
+            existing_events = session.exec(select(Event)).all()
         recent_events_map = {e.name: e.description for e in existing_events}
 
         if article_id:
