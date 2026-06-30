@@ -185,6 +185,8 @@ def get_hotspots(session: Session = Depends(get_session)):
         .where(Event.is_active == True)
         .order_by(Event.severity.desc())
     ).all()
+    for hotspot in hotspots:
+        hotspot.articles.sort(key=lambda a: a.published_at or datetime.min, reverse=True)
     return hotspots
 
 @app.post("/hotspots/refresh")
