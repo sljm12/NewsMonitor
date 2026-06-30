@@ -87,7 +87,7 @@ def analyze_article_content(article: Article, recent_events: Dict[str, str] = {}
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": content}
             ],
-            extra_body={"reasoning": {"enabled": False}}
+            extra_body={"reasoning": {"enabled": False},"thinking": {"type": "disabled"}}
         )
         
         if not response or not response.choices:

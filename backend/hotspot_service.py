@@ -105,7 +105,8 @@ def refresh_hotspots():
                     )},
                     {"role": "user", "content": f"Analyze these recent news items and identify the primary Hot Spots:\n\n{prompt_content}"}
                 ],
-                response_format={"type": "json_object"}
+                response_format={"type": "json_object"},
+                extra_body={"reasoning": {"enabled": False},"thinking": {"type": "disabled"}}
             )
             
             raw_content = response.choices[0].message.content
